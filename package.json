@@ -4,7 +4,8 @@
     "description": "Servidor HTTP en Node JS",
     "main": "server.js",
     "scripts": {
-        "start": "node --watch --no-warnings ./src/server.js",
+        "dev": "node --watch --no-warnings ./src/server.js",
+        "prod": "node --trace-warnings ./src/server.js",
         "stop": "killall -9 node",
         "lint": "eslint ./src"
     },
