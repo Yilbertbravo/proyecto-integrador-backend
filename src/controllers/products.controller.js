@@ -51,19 +51,19 @@ const getAll = async (req, res) => {
     try {
         const { search } = req.query;
         const filters = {};
-        const products = [];
+        let products = [];
 
         if (search) {
             filters["$or"] = [{ id: Number(search) }, { name: { $regex: normalizeValue(search), $options: "i" } }];
         }
 
         const collection = await getCollection("products");
-        const documents = collection.count();
-        if (documents > 0) {
+        const countDocuments = await collection.countDocuments();
+
+        if (countDocuments > 0) {
             products = await collection.find(filters).sort({ name: 1 }).hint("idx_id").hint("idx_name").toArray();
         }
 
-        console.log(products);
         res.status(200).send({ success: true, data: products });
     } catch (error) {
         console.log(error);
