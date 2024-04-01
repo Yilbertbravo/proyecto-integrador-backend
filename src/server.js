@@ -1,5 +1,6 @@
 const express = require("express");
 const multer = require("multer");
+const cors = require("cors");
 
 const productsRouter = require("./routes/products.router.js");
 const database = require("./connectionDB.js");
@@ -14,6 +15,12 @@ require("dotenv").config({ path: ENV_PATH });
 const server = express();
 const PORT = process.env.PORT || 3030;
 const HOST = process.env.HOST || "localhost";
+
+// configuración de CORS
+server.use(cors({
+    origin: process.env.FRONTEND_URL,
+    methods: "GET,POST,PUT,PATCH,DELETE",
+}));
 
 // Middlewares
 server.use(express.json());
