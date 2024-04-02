@@ -1,4 +1,5 @@
 const path = require("path");
+
 const { getCollection, generateId } = require("../connectionDB.js");
 const { HEADER_CONTENT_TYPE } = require("../constants/headers.js");
 
@@ -22,7 +23,7 @@ const normalizeValue = (value) => {
 };
 
 const createSchema = (values) => {
-    const { id, name, description, imageFileName, stock, price, isPromotion } = values;
+    const { id, name, description, imageFileName, stock, price, isPromotion, amount } = values;
 
     return {
         id: Number(id),
@@ -125,6 +126,31 @@ const update = async (req, res) => {
     }
 };
 
+const updateInventory = async (req, res) => {
+    res.set(HEADER_CONTENT_TYPE);
+    console.log("descontando");
+
+    try {
+        const { name } = req.params;
+        const collection = await getCollection("products");
+        const product = await collection.findOne({ name: name });
+
+        if (!product) return res.status(404).send({ success: false, message: ERROR_ID_NOT_FOUND });
+
+        if (product.stock < Number(req.body.amount)) return res.status(404).send({ success: false, message: ERROR_INSUFFICIENT_QUANTITY });
+
+        const values = createSchema({ name, ...req.body });
+        values.stock -= Number(req.body.amount);
+
+        await collection.updateOne({ name: name }, { $set: values });
+
+        res.status(200).send({ success: true, data: values });
+    } catch (error) {
+        console.log(error.message);
+        res.status(500).send({ success: false, message: ERROR_SERVER });
+    }
+};
+
 const remove = async (req, res) => {
     res.set(HEADER_CONTENT_TYPE);
 
@@ -162,4 +188,4 @@ const uploadImage = async (req, res) => {
     }
 };
 
-module.exports = { getAll, getOne, create, update, remove, uploadImage };
+module.exports = { getAll, getOne, create, update, remove, uploadImage, updateInventory };

@@ -33,12 +33,24 @@ const validateBody = (req, res, next) => {
         price: Joi.number().min(1).required(),
         isPromotion: Joi.boolean().required(),
         amount: Joi.number().integer().min(0).allow(null),
+        files: Joi.array().allow(),
     });
 
     validate(schema, req.body, res, next);
 };
 
+const validateEmail = (req, res, next) => {
+    const schema = Joi.object({
+        to: Joi.string().min(3).max(35).required(),
+        subject: Joi.string().min(2).max(150).allow("").allow(null),
+        content: Joi.string().min(2).max(150).required(),
+    });
+
+    validate(schema, req.query, res, next);
+};
+
 module.exports = {
     validateParamId,
     validateBody,
+    validateEmail,
 };
