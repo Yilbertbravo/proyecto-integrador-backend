@@ -23,7 +23,7 @@ const normalizeValue = (value) => {
 };
 
 const createSchema = (values) => {
-    const { id, name, description, imageFileName, stock, price, isPromotion, amount } = values;
+    const { id, name, description, imageFileName, stock, price, isPromotion } = values;
 
     return {
         id: Number(id),

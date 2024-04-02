@@ -18,7 +18,10 @@ const PORT = process.env.PORT || 3030;
 const HOST = process.env.HOST || "localhost";
 
 // configuración de CORS
-server.use(cors());
+server.use(cors({
+    origin: process.env.FRONTEND_URL,
+    methods: "GET,PUT,PATCH,POST,DELETE",
+}));
 
 // Middlewares
 server.use(express.json());
