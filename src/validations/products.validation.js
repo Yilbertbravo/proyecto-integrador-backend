@@ -39,18 +39,37 @@ const validateBody = (req, res, next) => {
     validate(schema, req.body, res, next);
 };
 
-const validateEmail = (req, res, next) => {
+const validateProduct = (req, res, next) => {
     const schema = Joi.object({
-        to: Joi.string().min(3).max(35).required(),
-        subject: Joi.string().min(2).max(150).allow("").allow(null),
-        content: Joi.string().min(2).max(150).required(),
+        products: Joi.array().items(Joi.object({
+            id: Joi.number().integer().min(1).required(),
+            name: Joi.string().min(3).max(35).required(),
+            description: Joi.string().min(15).max(150).allow(null).allow(""),
+            imageFileName: Joi.string().min(11).max(29).required(),
+            stock: Joi.number().integer().min(0).required(),
+            amount: Joi.number().integer().min(1).required(),
+            price: Joi.number().min(1).required(),
+            isPromotion: Joi.boolean().required(),
+        })),
     });
 
-    validate(schema, req.query, res, next);
+    validate(schema, req.body, res, next);
+};
+
+const validateEmail = (req, res, next) => {
+    const schema = Joi.object({
+        fullname: Joi.string().min(3).max(25).required(),
+        telephone: Joi.string().max(15).required(),
+        email: Joi.string().email().max(40).required(),
+        consult: Joi.string().min(10).max(135).required(),
+    });
+
+    validate(schema, req.body, res, next);
 };
 
 module.exports = {
     validateParamId,
     validateBody,
     validateEmail,
+    validateProduct,
 };

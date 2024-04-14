@@ -1,7 +1,7 @@
 const Router = require("express");
 
-const { validateParamId, validateBody } = require("../validations/products.validation.js");
-const { getAll, getOne, create, update, remove, uploadImage } = require("../controllers/products.controller.js");
+const { validateParamId, validateBody, validateProduct } = require("../validations/products.validation.js");
+const { getAll, getOne, create, update, remove, uploadImage, updateInventory } = require("../controllers/products.controller.js");
 const uploaderImage = require("../uploader.image.js");
 
 const routes = Router();
@@ -19,14 +19,14 @@ routes
     .put("/:id", validateParamId, validateBody, (req, res) => {
         update(req, res);
     })
-    // .put("/", validateBody, (req, res) => {
-    //     updateInventory(req, res);
-    // })
     .delete("/:id", validateParamId, (req, res) => {
         remove(req, res);
     })
     .post("/upload", uploaderImage.single("file"), (req, res) => {
         uploadImage(req, res);
+    })
+    .patch("/update-inventory", validateProduct, (req, res) => {
+        updateInventory(req, res);
     })
 
 ;

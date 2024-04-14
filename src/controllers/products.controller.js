@@ -1,13 +1,9 @@
 const path = require("path");
 
 const { getCollection, generateId } = require("../connectionDB.js");
-const { HEADER_CONTENT_TYPE } = require("../constants/headers.js");
 
-const {
-    ERROR_ID_NOT_FOUND,
-    ERROR_SERVER,
-    ERROR_UPLOAD_NULL,
-} = require("../constants/messages.js");
+const { HEADER_CONTENT_TYPE } = require("../constants/headers.js");
+const { ERROR_ID_NOT_FOUND, ERROR_SERVER, ERROR_UPLOAD_NULL } = require("../constants/messages.js");
 const { DIR_IMAGES_PATH } = require("../constants/paths.js");
 const { deletefile } = require("../fileSystem.js");
 
@@ -110,12 +106,14 @@ const update = async (req, res) => {
         const collection = await getCollection("products");
         const product = await collection.findOne({ id: Number(id) });
 
-        if (!product) return res.status(404).send({ success: false, message: ERROR_ID_NOT_FOUND });
+        if (!product){
+            deleteImage(req.body.imageFileName);
+            return res.status(404).send({ success: false, message: ERROR_ID_NOT_FOUND });};
 
         const values = createSchema({ id, ...req.body });
         await collection.updateOne({ id: Number(id) }, { $set: values });
 
-        if (product.imageFileName != values.imageFileName) {
+        if (product.imageFileName != req.body?.imageFileName) {
             deleteImage(product.imageFileName);
         }
 
@@ -128,25 +126,32 @@ const update = async (req, res) => {
 
 const updateInventory = async (req, res) => {
     res.set(HEADER_CONTENT_TYPE);
-    console.log("descontando");
 
     try {
-        const { name } = req.params;
+        const session = getSession();
+        session.startTransaction();
+
+        const { products } = req.body;
+        const productsDataBase = [];
         const collection = await getCollection("products");
-        const product = await collection.findOne({ name: name });
 
-        if (!product) return res.status(404).send({ success: false, message: ERROR_ID_NOT_FOUND });
+        for (const product of products) {
+            const productDataBase = await collection.findOne({ id: Number(product.id) });
 
-        if (product.stock < Number(req.body.amount)) return res.status(404).send({ success: false, message: ERROR_INSUFFICIENT_QUANTITY });
+            if (!productDataBase) return res.status(404).send({ success: false, message: ERROR_IDS_NOT_FOUND });
+            if (productDataBase.stock < Number(product.amount)) return res.status(404).send({ success: false, message: "Stock insuficiente" });
 
-        const values = createSchema({ name, ...req.body });
-        values.stock -= Number(req.body.amount);
+            const values = createSchema({ ...productDataBase, stock: productDataBase.stock-Number(product.amount) });
+            productsDataBase.push(values);
+            await collection.updateOne({ id: values.id }, { $set: values });
+        }
 
-        await collection.updateOne({ name: name }, { $set: values });
+        await session.commitTransaction();
 
-        res.status(200).send({ success: true, data: values });
+        res.status(200).send({ success: true, data: productsDataBase });
     } catch (error) {
-        console.log(error.message);
+        await session.abortTransaction();
+        console.log(error);
         res.status(500).send({ success: false, message: ERROR_SERVER });
     }
 };

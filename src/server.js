@@ -1,9 +1,11 @@
 const express = require("express");
 const multer = require("multer");
 const cors = require("cors");
-const sendMail = require("./mailer.js");
 
 const productsRouter = require("./routes/products.router.js");
+const shoppingCartsRouter = require("./routes/shoppingCarts.router.js");
+const consultsRouter = require("./routes/consults.router.js");
+
 const database = require("./connectionDB.js");
 
 const { ENV_PATH, DIR_PUBLIC_PATH } = require("./constants/paths.js");
@@ -26,28 +28,11 @@ server.use(cors({
 // Middlewares
 server.use(express.json());
 server.use("/api/products", productsRouter);
+server.use("/api/shopping-carts", shoppingCartsRouter);
+server.use("/api/consults", consultsRouter);
 
 // Configuración de carpeta estatica
 server.use("/public", express.static(DIR_PUBLIC_PATH));
-
-// Endpoint para obtener los coches. URL: http://127.0.0.1:3000/api/send-mail?marca=Fiat&anio=2021
-server.get("/api/send-mail", async (req, res) => {
-    res.set({ "Content-Type": "application/json" });
-
-    try {
-        const { to, subject, content } = req.query;
-
-        if (!to || !subject || !content) {
-            return res.status(400).send({ error: "Faltan datos relevantes" });
-        }
-
-        const result = await sendMail(to, subject, content);
-        console.log(result);
-        res.status(200).send(result);
-    } catch (error) {
-        res.status(500).send({ error: MESSAGE_500 });
-    }
-});
 
 // Control de errores
 server.use((error, req, res, next) => {

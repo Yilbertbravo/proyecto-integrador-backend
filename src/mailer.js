@@ -1,44 +1,26 @@
-const path = require("path");
 const nodemailer = require("nodemailer");
+const { ENV_PATH } = require("./constants/paths");
 
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
+require("dotenv").config({ path: ENV_PATH });
 
-// Configuración de SMTP: https://app.brevo.com/ + Google
-const getSMTP = () => {
+const getTransport = () => {
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
-        secure: false, // Determina si se usa SSL/TLS
+        secure: false, // SSL/TLS
         auth: {
-            type: "login",
             user: process.env.SMTP_EMAIL,
             pass: process.env.SMTP_PASSWORD,
         },
-
     });
 };
 
-const setOptions = (to, subject, content) => {
-    return {
-        from: process.env.SMTP_EMAIL,
-        to,
-        subject,
-        text: content };
-};
-
-const sendMail = async (to, subject, content) => {
+const sendMail = async (from, to, subject, contentHTML) => {
     try {
-        const transport = getSMTP();
-        console.log(transport);
-
-        const options = setOptions(to, subject, content);
-        console.log(options);
-        await transport.sendMail(options);
-
-        return "Envío Correcto";
+        const transport = getTransport();
+        return await transport.sendMail({ from, to, subject, html: contentHTML });
     } catch (error) {
         console.error(error);
-        return "Envío Fallido";
     }
 };
 
