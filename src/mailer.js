@@ -12,6 +12,7 @@ const getTransport = () => {
             user: process.env.SMTP_EMAIL,
             pass: process.env.SMTP_PASSWORD,
         },
+
     });
 };
 

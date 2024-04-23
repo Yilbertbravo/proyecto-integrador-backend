@@ -5,7 +5,7 @@ const { send } = require("../controllers/consults.controller.js");
 const routes = Router();
 
 routes
-    .post("/send-consult", validateProduct, (req, res) => {
+    .post("/send-mail", validateProduct, (req, res) => {
         send(req, res);
     });
 

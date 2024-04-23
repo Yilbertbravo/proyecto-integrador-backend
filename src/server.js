@@ -16,8 +16,8 @@ require("dotenv").config({ path: ENV_PATH });
 
 // Configuración de express
 const server = express();
-const PORT = process.env.PORT || 3030;
-const HOST = process.env.HOST || "localhost";
+const PORT = process.env.PORT;
+const HOST = process.env.HOST;
 
 // configuración de CORS
 server.use(cors({
@@ -25,14 +25,14 @@ server.use(cors({
     methods: "GET,PUT,PATCH,POST,DELETE",
 }));
 
+// Configuración de carpeta estatica
+server.use("/public", express.static(DIR_PUBLIC_PATH));
+
 // Middlewares
 server.use(express.json());
 server.use("/api/products", productsRouter);
 server.use("/api/shopping-carts", shoppingCartsRouter);
 server.use("/api/consults", consultsRouter);
-
-// Configuración de carpeta estatica
-server.use("/public", express.static(DIR_PUBLIC_PATH));
 
 // Control de errores
 server.use((error, req, res, next) => {
